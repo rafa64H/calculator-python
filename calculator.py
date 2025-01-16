@@ -1,4 +1,5 @@
 import tkinter as tk
+import re
 
 
 class Calculator:
@@ -184,6 +185,31 @@ class Calculator:
             self.entry.insert(0, new_text)
         elif text == "c":
             self.entry.delete(0, tk.END)
+        elif text == "=":
+            raw_string = self.entry.get()
+            pattern = r"/|\*|\-|\+"
+
+            if "/0" in raw_string:
+                self.result.config(text="Can not divide by 0")
+                return
+
+            split_string = re.split(pattern, raw_string)
+            array_str_nums = []
+            for str_number in split_string:
+                if str_number != "":
+                    array_str_nums.append(str_number)
+
+            operation_signs = re.findall(pattern, raw_string)
+
+            if len(operation_signs) >= len(array_str_nums):
+                self.result.config(text="Invalid expression, operation sign isolated")
+                return None
+
+            arr_nums = []
+            for str_num in array_str_nums:
+                arr_nums.append(float(str_num))
+
+            self.result.config(text="")
 
 
 Calculator()
