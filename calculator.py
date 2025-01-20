@@ -9,7 +9,7 @@ class Calculator:
         self.root.geometry("500x500")
         self.root.title("Calculator by rafa64H")
 
-        self.result = tk.Label(self.root, text="Something", font={"arial", 18})
+        self.result = tk.Label(self.root, text="0", font={"arial", 18})
         self.result.pack(fill="x")
 
         self.entry = tk.Entry(self.root)
