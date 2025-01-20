@@ -260,6 +260,10 @@ class Calculator:
             print(first_operations)
 
             total_result = 0
+            if len(first_operations) == 1:
+                total_result = float(first_operations[0])
+                self.result.config(text=str(total_result))
+                return None
 
             for i in range(len(findall_last_additions_and_substractions)):
                 if i == 0:
@@ -279,7 +283,7 @@ class Calculator:
 
             print(total_result)
 
-            self.result.config(text="")
+            self.result.config(text=str(total_result))
 
 
 # 2*2*2+5*5+8-5+8/4+8
