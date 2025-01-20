@@ -187,29 +187,100 @@ class Calculator:
             self.entry.delete(0, tk.END)
         elif text == "=":
             raw_string = self.entry.get()
-            pattern = r"/|\*|\-|\+"
+            pattern = r"\-|\+|\*|/"
+            pattern_add_substract = r"\-|\+"
+            pattern_multiply_divide = r"\*|/"
 
             if "/0" in raw_string:
                 self.result.config(text="Can not divide by 0")
                 return
 
             split_string = re.split(pattern, raw_string)
-            array_str_nums = []
+            array_remove_empty_string = []
             for str_number in split_string:
                 if str_number != "":
-                    array_str_nums.append(str_number)
+                    array_remove_empty_string.append(str_number)
 
             operation_signs = re.findall(pattern, raw_string)
 
-            if len(operation_signs) >= len(array_str_nums):
+            if len(operation_signs) >= len(split_string):
                 self.result.config(text="Invalid expression, operation sign isolated")
                 return None
 
-            arr_nums = []
-            for str_num in array_str_nums:
-                arr_nums.append(float(str_num))
+            split_entire_multiplications_divisions = re.split(
+                pattern_add_substract, raw_string
+            )
+            findall_last_additions_and_substractions = re.findall(
+                pattern_add_substract, raw_string
+            )
+            print(
+                split_entire_multiplications_divisions,
+                findall_last_additions_and_substractions,
+            )
+
+            # solve:
+            first_operations = []
+
+            for i in range(len(split_entire_multiplications_divisions)):
+                print(split_entire_multiplications_divisions[i])
+                if (
+                    "*" not in split_entire_multiplications_divisions[i]
+                    and "/" not in split_entire_multiplications_divisions[i]
+                ):
+                    first_operations.append(split_entire_multiplications_divisions[i])
+                else:
+                    numbers_inside = re.split(
+                        pattern_multiply_divide,
+                        split_entire_multiplications_divisions[i],
+                    )
+                    operators_inside = re.findall(
+                        pattern_multiply_divide,
+                        split_entire_multiplications_divisions[i],
+                    )
+                    result = 0
+
+                    for j in range(len(operators_inside)):
+                        if j == 0:
+                            if operators_inside[j] == "*":
+                                result = float(numbers_inside[j]) * float(
+                                    numbers_inside[j + 1]
+                                )
+                            elif operators_inside[j] == "/":
+                                result = float(numbers_inside[j]) / float(
+                                    numbers_inside[j + 1]
+                                )
+
+                        else:
+                            if operators_inside[j] == "*":
+                                result *= float(numbers_inside[j + 1])
+                            elif operators_inside[j] == "/":
+                                result /= float(numbers_inside[j + 1])
+                    first_operations.append(str(result))
+
+            print(first_operations)
+
+            total_result = 0
+
+            for i in range(len(findall_last_additions_and_substractions)):
+                if i == 0:
+                    if findall_last_additions_and_substractions[i] == "+":
+                        total_result = float(first_operations[i]) + float(
+                            first_operations[i + 1]
+                        )
+                    else:
+                        total_result = float(first_operations[i]) - float(
+                            first_operations[i + 1]
+                        )
+                else:
+                    if findall_last_additions_and_substractions[i] == "+":
+                        total_result += float(first_operations[i + 1])
+                    else:
+                        total_result -= float(first_operations[i + 1])
+
+            print(total_result)
 
             self.result.config(text="")
 
 
+# 2*2*2+5*5+8-5+8/4+8
 Calculator()
