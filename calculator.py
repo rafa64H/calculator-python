@@ -12,8 +12,16 @@ class Calculator:
         self.result = tk.Label(self.root, text="0", font={"arial", 18})
         self.result.pack(fill="x")
 
-        self.entry = tk.Entry(self.root)
+        self.validation_command = (self.root.register(self.validate_input), "%S", "%d")
+
+        self.entry = tk.Entry(
+            self.root, validate="key", validatecommand=self.validation_command
+        )
+        self.entry.bind("<Control-a>", self.select_all)
+        self.entry.bind("<Control-A>", self.select_all)
         self.entry.pack(fill="x", padx=10)
+
+        self.root.bind("<KeyPress>", self.input_entry_not_focused)
 
         self.buttonframe = tk.Frame(self.root)
         self.buttonframe.columnconfigure(0, weight=1)
@@ -169,6 +177,29 @@ class Calculator:
 
         self.root.mainloop()
 
+    def select_all(self, event):
+        self.entry.select_range(0, tk.END)
+        return "break"
+
+    def validate_input(self, char, action_type):
+        valid_chars = "0123456789*/-+\b"
+        if action_type == "1":
+            return char in valid_chars
+        elif action_type == "0":
+            return True
+
+    def input_entry_not_focused(self, event):
+        if event.keysym == "BackSpace":
+            if self.entry.selection_present():
+                self.entry.delete(tk.SEL_FIRST, tk.SEL_LAST)
+            else:
+                current_position = self.entry.index(tk.INSERT)
+                if current_position > 0:
+                    self.entry.delete(current_position - 1)
+        else:
+            if self.validate_input(event.char, "1"):
+                self.entry.insert(tk.END, event.char)
+
     def button_click(self, text):
 
         if text != "backspace" and text != "=" and text != "c":
@@ -176,13 +207,21 @@ class Calculator:
             if len(current_text) == 0 and text == "0":
                 return None
             new_text = f"{current_text}{text}"
+            self.entry.config(validate="none")
             self.entry.delete(0, tk.END)
             self.entry.insert(0, new_text)
+            self.entry.config(validate="key")
         elif text == "backspace":
             current_text = self.entry.get()
             new_text = current_text[:-1]
-            self.entry.delete(0, tk.END)
-            self.entry.insert(0, new_text)
+            self.entry.config(validate="none")
+            if self.entry.selection_present():
+                self.entry.delete(tk.SEL_FIRST, tk.SEL_LAST)
+            else:
+                current_position = self.entry.index(tk.INSERT)
+                if current_position > 0:
+                    self.entry.delete(current_position - 1)
+            self.entry.config(validate="key")
         elif text == "c":
             self.entry.delete(0, tk.END)
         elif text == "=":
@@ -195,15 +234,15 @@ class Calculator:
                 self.result.config(text="Can not divide by 0")
                 return
 
-            split_string = re.split(pattern, raw_string)
-            array_remove_empty_string = []
-            for str_number in split_string:
+            split_numbers = re.split(pattern, raw_string)
+            removed_empty_strings_from_split = []
+            for str_number in split_numbers:
                 if str_number != "":
-                    array_remove_empty_string.append(str_number)
+                    removed_empty_strings_from_split.append(str_number)
 
-            operation_signs = re.findall(pattern, raw_string)
+            all_operation_signs = re.findall(pattern, raw_string)
 
-            if len(operation_signs) >= len(split_string):
+            if len(all_operation_signs) >= len(removed_empty_strings_from_split):
                 self.result.config(text="Invalid expression, operation sign isolated")
                 return None
 
@@ -213,16 +252,11 @@ class Calculator:
             findall_last_additions_and_substractions = re.findall(
                 pattern_add_substract, raw_string
             )
-            print(
-                split_entire_multiplications_divisions,
-                findall_last_additions_and_substractions,
-            )
 
             # solve:
             first_operations = []
 
             for i in range(len(split_entire_multiplications_divisions)):
-                print(split_entire_multiplications_divisions[i])
                 if (
                     "*" not in split_entire_multiplications_divisions[i]
                     and "/" not in split_entire_multiplications_divisions[i]
