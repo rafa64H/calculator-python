@@ -182,30 +182,30 @@ class Calculator:
         return "break"
 
     def validate_input(self, char, action_type):
-        valid_chars = "0123456789*/-+\b"
+        valid_chars = "0123456789*/-+.\b"
         if action_type == "1":
             return char in valid_chars
         elif action_type == "0":
             return True
 
     def input_entry_not_focused(self, event):
-        if event.keysym == "BackSpace":
-            if self.entry.selection_present():
-                self.entry.delete(tk.SEL_FIRST, tk.SEL_LAST)
+        if not self.root.focus_get() == self.entry:
+
+            if event.keysym == "BackSpace":
+                if self.entry.selection_present():
+                    self.entry.delete(tk.SEL_FIRST, tk.SEL_LAST)
+                else:
+                    current_position = self.entry.index(tk.INSERT)
+                    if current_position > 0:
+                        self.entry.delete(current_position - 1)
             else:
-                current_position = self.entry.index(tk.INSERT)
-                if current_position > 0:
-                    self.entry.delete(current_position - 1)
-        else:
-            if self.validate_input(event.char, "1"):
-                self.entry.insert(tk.END, event.char)
+                if self.validate_input(event.char, "1"):
+                    self.entry.insert(tk.END, event.char)
 
     def button_click(self, text):
 
         if text != "backspace" and text != "=" and text != "c":
             current_text = self.entry.get()
-            if len(current_text) == 0 and text == "0":
-                return None
             new_text = f"{current_text}{text}"
             self.entry.config(validate="none")
             self.entry.delete(0, tk.END)
@@ -230,9 +230,21 @@ class Calculator:
             pattern_add_substract = r"\-|\+"
             pattern_multiply_divide = r"\*|/"
 
+            pattern_invalid_zero = r'\b0\d+|[/*\-+]0\d+'
+            pattern_invalid_dots = r'(?<!\d)\.(?!\d)|\.\.|\.\d+\.|[/*\-+]\.[/*\-+]'
+
+            find_invalid_zero = bool(re.search(pattern_invalid_zero, raw_string))
+            find_invalid_dots = bool(re.search(pattern_invalid_dots, raw_string))
+
             if "/0" in raw_string:
                 self.result.config(text="Can not divide by 0")
                 return
+            if(find_invalid_zero):
+                self.result.config(text="Invalid expression, invalid zero")
+                return None
+            if(find_invalid_dots):
+                self.result.config(text="Invalid expression, wrong dot location")
+                return None
 
             split_numbers = re.split(pattern, raw_string)
             removed_empty_strings_from_split = []
