@@ -227,8 +227,6 @@ class Calculator:
         elif text == "=":
             raw_string = self.entry.get()
             pattern = r"\-|\+|\*|/"
-            pattern_add_substract = r"\-|\+"
-            pattern_multiply_divide = r"\*|/"
 
             pattern_invalid_zero = r'\b0\d+|[/*\-+]0\d+'
             pattern_invalid_dots = r'(?<!\d)\.(?!\d)|\.\.|\.\d+\.|[/*\-+]\.[/*\-+]'
@@ -258,78 +256,9 @@ class Calculator:
                 self.result.config(text="Invalid expression, operation sign isolated")
                 return None
 
-            split_entire_multiplications_divisions = re.split(
-                pattern_add_substract, raw_string
-            )
-            findall_last_additions_and_substractions = re.findall(
-                pattern_add_substract, raw_string
-            )
+            result = eval(raw_string)
 
-            # solve:
-            first_operations = []
-
-            for i in range(len(split_entire_multiplications_divisions)):
-                if (
-                    "*" not in split_entire_multiplications_divisions[i]
-                    and "/" not in split_entire_multiplications_divisions[i]
-                ):
-                    first_operations.append(split_entire_multiplications_divisions[i])
-                else:
-                    numbers_inside = re.split(
-                        pattern_multiply_divide,
-                        split_entire_multiplications_divisions[i],
-                    )
-                    operators_inside = re.findall(
-                        pattern_multiply_divide,
-                        split_entire_multiplications_divisions[i],
-                    )
-                    result = 0
-
-                    for j in range(len(operators_inside)):
-                        if j == 0:
-                            if operators_inside[j] == "*":
-                                result = float(numbers_inside[j]) * float(
-                                    numbers_inside[j + 1]
-                                )
-                            elif operators_inside[j] == "/":
-                                result = float(numbers_inside[j]) / float(
-                                    numbers_inside[j + 1]
-                                )
-
-                        else:
-                            if operators_inside[j] == "*":
-                                result *= float(numbers_inside[j + 1])
-                            elif operators_inside[j] == "/":
-                                result /= float(numbers_inside[j + 1])
-                    first_operations.append(str(result))
-
-            print(first_operations)
-
-            total_result = 0
-            if len(first_operations) == 1:
-                total_result = float(first_operations[0])
-                self.result.config(text=str(total_result))
-                return None
-
-            for i in range(len(findall_last_additions_and_substractions)):
-                if i == 0:
-                    if findall_last_additions_and_substractions[i] == "+":
-                        total_result = float(first_operations[i]) + float(
-                            first_operations[i + 1]
-                        )
-                    else:
-                        total_result = float(first_operations[i]) - float(
-                            first_operations[i + 1]
-                        )
-                else:
-                    if findall_last_additions_and_substractions[i] == "+":
-                        total_result += float(first_operations[i + 1])
-                    else:
-                        total_result -= float(first_operations[i + 1])
-
-            print(total_result)
-
-            self.result.config(text=str(total_result))
+            self.result.config(text=str(result))
 
 
 # 2*2*2+5*5+8-5+8/4+8
