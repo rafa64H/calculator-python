@@ -21,7 +21,7 @@ class Calculator:
         self.entry.bind("<Control-A>", self.select_all)
         self.entry.pack(fill="x", padx=10)
 
-        self.root.bind("<KeyPress>", self.input_entry_not_focused)
+        self.root.bind("<KeyPress>", self.input_root_binded)
 
         self.buttonframe = tk.Frame(self.root)
         self.buttonframe.columnconfigure(0, weight=1)
@@ -188,7 +188,9 @@ class Calculator:
         elif action_type == "0":
             return True
 
-    def input_entry_not_focused(self, event):
+    def input_root_binded(self, event):
+        if event.keysym == 'Return' or event.keysym == 'KP_Enter' or event.keysym == 'equal':
+            self.button_click('=')
         if not self.root.focus_get() == self.entry:
 
             if event.keysym == "BackSpace":
@@ -260,6 +262,4 @@ class Calculator:
 
             self.result.config(text=str(result))
 
-
-# 2*2*2+5*5+8-5+8/4+8
 Calculator()
